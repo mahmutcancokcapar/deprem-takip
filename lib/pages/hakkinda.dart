@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class Hakkinda extends StatefulWidget {
   const Hakkinda({super.key});
@@ -13,6 +14,7 @@ class _HakkindaState extends State<Hakkinda> with TickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  String _surum = 'Yükleniyor...';
 
   @override
   void initState() {
@@ -25,6 +27,14 @@ class _HakkindaState extends State<Hakkinda> with TickerProviderStateMixin {
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
+    _surumuYukle();
+  }
+
+  Future<void> _surumuYukle() async {
+    final info = await PackageInfo.fromPlatform();
+    setState(() {
+      _surum = '${info.version}+${info.buildNumber}';
+    });
   }
 
   @override
@@ -102,9 +112,9 @@ class _HakkindaState extends State<Hakkinda> with TickerProviderStateMixin {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Sürüm 1.0.0',
-                      style: TextStyle(fontSize: 16, color: Colors.white70),
+                    Text(
+                      'Sürüm: $_surum',
+                      style: const TextStyle(fontSize: 16, color: Colors.white70),
                     ),
                     const SizedBox(height: 12),
                     Container(
@@ -379,7 +389,11 @@ class _HakkindaState extends State<Hakkinda> with TickerProviderStateMixin {
             ),
             const SizedBox(height: 20),
             _buildContactItem(Icons.email, 'E-posta', 'info@mcmedya.com'),
-            _buildContactItem(Icons.web, 'Website', 'https://mcmedya.netlify.app'),
+            _buildContactItem(
+              Icons.web,
+              'Website',
+              'https://mcmedya.netlify.app',
+            ),
             _buildContactItem(
               Icons.support_agent,
               'Destek',
