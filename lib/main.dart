@@ -12,7 +12,31 @@ void main() async {
   // Arka plan servisini başlat
   await BackgroundEarthquakeService.initialize();
 
+  // Arka plan servisini kontrol et ve başlat
+  await _initializeBackgroundService();
+
   runApp(const MyApp());
+}
+
+Future<void> _initializeBackgroundService() async {
+  try {
+    // Bildirimler açık mı kontrol et
+    final notificationsEnabled = await BackgroundEarthquakeService.areNotificationsEnabled();
+    
+    if (notificationsEnabled) {
+      // ignore: avoid_print
+      print('🚀 Bildirimler açık, arka plan servisi başlatılıyor...');
+      await BackgroundEarthquakeService.startPeriodicCheck();
+      // ignore: avoid_print
+      print('✅ Arka plan servisi başlatıldı');
+    } else {
+      // ignore: avoid_print
+      print('📴 Bildirimler kapalı, arka plan servisi başlatılmadı');
+    }
+  } catch (e) {
+    // ignore: avoid_print
+    print('❌ Arka plan servisi başlatılamadı: $e');
+  }
 }
 
 class MyApp extends StatelessWidget {

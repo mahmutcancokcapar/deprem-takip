@@ -141,5 +141,19 @@ class NotificationService {
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
         ?.requestNotificationsPermission();
+        
+    // Android için pil optimizasyonu iznini iste
+    await _requestBatteryOptimizationExemption();
+  }
+  
+  static Future<void> _requestBatteryOptimizationExemption() async {
+    try {
+      // Not: Bu Android native kod gerektirir, şimdilik sadece log bırakıyoruz
+      // ignore: avoid_print
+      print('💡 Kullanıcıdan pil optimizasyonunu kapatması istenmeli');
+    } catch (e) {
+      // ignore: avoid_print
+      print('Pil optimizasyonu izni istenemedi: $e');
+    }
   }
 }

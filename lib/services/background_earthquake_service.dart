@@ -16,15 +16,35 @@ class BackgroundEarthquakeService {
   }
 
   static Future<void> startPeriodicCheck() async {
-    // Her 15 dakikada bir kontrol et
-    await AndroidAlarmManager.periodic(
-      const Duration(minutes: 15),
-      _alarmId,
-      checkForNewEarthquakes,
-      wakeup: true,
-      exact: true,
-      allowWhileIdle: true,
-    );
+    try {
+      // Önce mevcut alarm'ı iptal et
+      await AndroidAlarmManager.cancel(_alarmId);
+      
+      // ignore: avoid_print
+      print('🔄 Arka plan alarm kurulumu başlıyor...');
+      
+      // Her 15 dakikada bir kontrol et
+      final success = await AndroidAlarmManager.periodic(
+        const Duration(minutes: 15),
+        _alarmId,
+        checkForNewEarthquakes,
+        wakeup: true,
+        exact: true,
+        allowWhileIdle: true,
+        rescheduleOnReboot: true, // Yeniden başlatmada otomatik başlat
+      );
+      
+      if (success) {
+        // ignore: avoid_print
+        print('✅ Arka plan alarm başarıyla kuruldu');
+      } else {
+        // ignore: avoid_print
+        print('❌ Arka plan alarm kurulamadı');
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('❌ Arka plan alarm kurulum hatası: $e');
+    }
   }
 
   static Future<void> stopPeriodicCheck() async {
@@ -112,25 +132,51 @@ class BackgroundEarthquakeService {
   @pragma('vm:entry-point')
   static Future<void> checkForNewEarthquakes() async {
     try {
+      // ignore: avoid_print
+      print('🔍 Arka plan deprem kontrolü başlatıldı: ${DateTime.now()}');
+      
       // Bildirimlerin açık olup olmadığını kontrol et
       final notificationsEnabled = await areNotificationsEnabled();
-      if (!notificationsEnabled) return;
+      if (!notificationsEnabled) {
+        // ignore: avoid_print
+        print('⚠️ Bildirimler kapalı, kontrol sonlandırılıyor');
+        return;
+      }
 
       final minimumMagnitude = await getMinimumMagnitude();
       final lastEarthquakeId = await _getLastEarthquakeId();
+      
+      // ignore: avoid_print
+      print('📊 Minimum büyüklük: $minimumMagnitude, Son deprem ID: $lastEarthquakeId');
 
       final earthquakes = await _fetchLatestEarthquakes();
-      if (earthquakes.isEmpty) return;
+      if (earthquakes.isEmpty) {
+        // ignore: avoid_print
+        print('⚠️ Deprem verisi alınamadı');
+        return;
+      }
+
+      // ignore: avoid_print
+      print('📡 ${earthquakes.length} deprem verisi alındı');
 
       // En yeni depremi al
       final latestEarthquake = earthquakes.first;
+      
+      // ignore: avoid_print
+      print('🆕 En yeni deprem: ${latestEarthquake.earthquakeId}, Büyüklük: ${latestEarthquake.mag}');
 
       // Eğer bu deprem daha önce bildirilmediyse ve minimum büyüklüğün üzerindeyse
       if (latestEarthquake.earthquakeId != lastEarthquakeId &&
           latestEarthquake.mag >= minimumMagnitude) {
+        // ignore: avoid_print
+        print('🚨 Yeni deprem bildirimi gönderiliyor: ${latestEarthquake.title}');
+        
         // Normal deprem bildirimi
         await _sendEarthquakeNotification(latestEarthquake, false);
         await _saveLastEarthquakeId(latestEarthquake.earthquakeId);
+        
+        // ignore: avoid_print
+        print('✅ Normal deprem bildirimi gönderildi');
       }
 
       // Büyük depremler için (4.0 ve üzeri) her zaman bildirim gönder
@@ -139,14 +185,23 @@ class BackgroundEarthquakeService {
           .toList();
 
       for (final earthquake in significantEarthquakes) {
+        // ignore: avoid_print
+        print('🚨🚨 Büyük deprem bildirimi gönderiliyor: ${earthquake.title}, Büyüklük: ${earthquake.mag}');
+        
         // Büyük deprem bildirimi
         await _sendEarthquakeNotification(earthquake, true);
         await _saveLastEarthquakeId(earthquake.earthquakeId);
+        
+        // ignore: avoid_print
+        print('✅ Büyük deprem bildirimi gönderildi');
         break; // Sadece bir büyük deprem bildirimi gönder
       }
+      
+      // ignore: avoid_print
+      print('✅ Arka plan deprem kontrolü tamamlandı: ${DateTime.now()}');
     } catch (e) {
       // ignore: avoid_print
-      print('Arka plan deprem kontrolü hatası: $e');
+      print('❌ Arka plan deprem kontrolü hatası: $e');
     }
   }
 

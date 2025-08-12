@@ -52,6 +52,9 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         _showPermissionDialog();
         return;
       }
+
+      // Pil optimizasyonu uyarısı göster
+      _showBatteryOptimizationDialog();
     }
 
     setState(() {
@@ -64,10 +67,11 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       SnackBar(
         content: Text(
           enabled
-              ? 'Deprem bildirimleri açıldı'
+              ? 'Deprem bildirimleri açıldı. Arka plan servisi başlatılıyor...'
               : 'Deprem bildirimleri kapatıldı',
         ),
         backgroundColor: enabled ? Colors.green : Colors.orange,
+        duration: Duration(seconds: enabled ? 4 : 2),
       ),
     );
   }
@@ -109,11 +113,100 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     );
   }
 
+  void _showBatteryOptimizationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('⚡ Önemli: Pil Optimizasyonu'),
+          content: const Text(
+            'Uygulama kapalıyken deprem bildirimlerini alabilmek için:\n\n'
+            '1. Cihaz Ayarları → Pil → Uygulama optimizasyonu\n'
+            '2. "Deprem Takip" uygulamasını bulun\n'
+            '3. "Optimize etme" seçeneğini seçin\n\n'
+            'Bu işlem yapılmazsa bildirimlerin gecikmesi ya da hiç gelmemesi mümkündür.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Anladım'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _showBatteryOptimizationSteps();
+              },
+              child: const Text('Nasıl Yapılır?'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showBatteryOptimizationSteps() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('📱 Adım Adım Rehber'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Samsung Cihazlar için:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const Text(
+                  '• Ayarlar → Cihaz bakımı → Pil → Uygulama güç yönetimi\n'
+                  '• "Deprem Takip" → "Optimize edilmedi"\n\n',
+                ),
+                const Text(
+                  'Xiaomi/MIUI için:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const Text(
+                  '• Ayarlar → Uygulamalar → Uygulama yöneticisi\n'
+                  '• "Deprem Takip" → Pil tasarrufu → "Kısıtlama yok"\n\n',
+                ),
+                const Text(
+                  'Huawei için:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const Text(
+                  '• Ayarlar → Pil → Uygulama başlatma\n'
+                  '• "Deprem Takip" → Manuel yönetim → Tüm seçenekleri açın\n\n',
+                ),
+                const Text(
+                  'Genel Android:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const Text(
+                  '• Ayarlar → Pil → Pil optimizasyonu\n'
+                  '• "Deprem Takip" → "Optimize etme"',
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Tamam'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
+        centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
@@ -154,6 +247,11 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                   _buildSectionTitle('Test Bildirimleri'),
                   const SizedBox(height: 12),
                   _buildTestButtons(),
+                  const SizedBox(height: 24),
+
+                  /*_buildSectionTitle('Debug & Kontrol'),
+                  const SizedBox(height: 12),
+                  _buildDebugButtons(),*/
                 ],
               ),
             ),
@@ -392,7 +490,8 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
             '• Uygulama arka planda 15 dakikada bir deprem verilerini kontrol eder\n'
             '• Belirlediğiniz minimum büyüklük ve üzerindeki depremler için bildirim gönderilir\n'
             '• 4.0 ve üzeri depremler için her zaman özel bildirim alırsınız\n'
-            '• Bildirimler Firebase kullanmadan, tamamen cihazınızda çalışır',
+            '• Uygulama kapalıyken bile bildirimler gelir (pil optimizasyonu kapatılmalı)\n'
+            '• Cihaz yeniden başladığında otomatik olarak tekrar çalışmaya başlar',
             style: GoogleFonts.inter(
               fontSize: 14,
               color: const Color(0xFF64748B),
@@ -572,4 +671,180 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       ),
     );
   }
+
+  /*Widget _buildDebugButtons() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.bug_report,
+                  color: Colors.orange,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                'Debug & Manuel Kontrol',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1E293B),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Arka plan servisini manuel olarak test edin:',
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _notificationsEnabled
+                  ? _manualEarthquakeCheck
+                  : null,
+              icon: const Icon(Icons.search, size: 18),
+              label: const Text('Manuel Deprem Kontrolü'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _notificationsEnabled
+                      ? _restartBackgroundService
+                      : null,
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text('Servisi Yeniden Başlat'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _showDebugInfo,
+                  icon: const Icon(Icons.info, size: 18),
+                  label: const Text('Debug Bilgisi'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }*/
+
+  /*Future<void> _manualEarthquakeCheck() async {
+    try {
+      _showSuccessMessage('Manuel kontrol başlatıldı...');
+      
+      // Debug logları console'da görünecek
+      await BackgroundEarthquakeService.checkForNewEarthquakes();
+      
+      _showSuccessMessage('Manuel kontrol tamamlandı! Debug loglarını console\'da kontrol edin.');
+    } catch (e) {
+      _showErrorMessage('Manuel kontrol hatası: $e');
+    }
+  }*/
+
+  /*Future<void> _restartBackgroundService() async {
+    try {
+      // Önce servisi durdur
+      await BackgroundEarthquakeService.stopPeriodicCheck();
+      
+      // Kısa bir bekleme
+      await Future.delayed(const Duration(seconds: 2));
+      
+      // Tekrar başlat
+      await BackgroundEarthquakeService.startPeriodicCheck();
+      
+      _showSuccessMessage('Arka plan servisi yeniden başlatıldı!');
+    } catch (e) {
+      _showErrorMessage('Servis yeniden başlatılamadı: $e');
+    }
+  }*/
+
+  /*void _showDebugInfo() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Debug Bilgisi'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('• Bildirimler: ${_notificationsEnabled ? "Açık" : "Kapalı"}'),
+            Text('• Minimum büyüklük: ${_minimumMagnitude.toStringAsFixed(1)}'),
+            const Text('• Kontrol aralığı: 15 dakika'),
+            const Text('• Debug logları console\'da görünür'),
+            const SizedBox(height: 16),
+            const Text(
+              'Sorun yaşıyorsanız:\n'
+              '1. Test bildirimlerini deneyin\n'
+              '2. Manuel kontrolü çalıştırın\n'
+              '3. Servisi yeniden başlatın\n'
+              '4. Cihaz ayarlarından pil optimizasyonunu kapatın',
+              style: TextStyle(fontSize: 12),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Tamam'),
+          ),
+        ],
+      ),
+    );
+  }*/
 }
