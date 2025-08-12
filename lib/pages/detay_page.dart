@@ -7,7 +7,6 @@ import 'package:deprem_takip/models/model.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:share_plus/share_plus.dart';
 
 class EarthquakeDetail extends StatefulWidget {
   final Earthquake earthquake;
@@ -193,7 +192,7 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
             ],
           ),
           child: IconButton(
-            icon: const Icon(Icons.share_outlined, color: Colors.black87),
+            icon: const Icon(Icons.copy_outlined, color: Colors.black87),
             onPressed: () => _shareEarthquakeData(),
           ),
         ),
@@ -1015,8 +1014,8 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
       children: [
         Expanded(
           child: _buildActionButton(
-            'Paylaş',
-            Icons.share_rounded,
+            'Kopyala',
+            Icons.copy_rounded,
             const Color(0xFF3B82F6),
             () => _shareEarthquakeData(),
           ),
@@ -1110,38 +1109,61 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
       final longitude = coordinates[0];
       final latitude = coordinates[1];
 
-      final shareText = '''🌍 Deprem Bilgileri
+      // Güvenli tarih formatlaması
+      final dateTime = widget.earthquake.dateTime;
+      final formattedDate =
+          '${dateTime.day.toString().padLeft(2, '0')}.${dateTime.month.toString().padLeft(2, '0')}.${dateTime.year}';
+      final formattedTime =
+          '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+
+      // Güzel formatlanmış paylaşım metni
+      final shareText =
+          '''🌍 Deprem Bilgileri
 
 📍 Konum: ${widget.earthquake.title}
-📊 Büyüklük: ${widget.earthquake.mag}
-📏 Derinlik: ${widget.earthquake.depth} km
+📊 Büyüklük: ${widget.earthquake.mag.toStringAsFixed(1)}
+📏 Derinlik: ${widget.earthquake.depth.toStringAsFixed(1)} km
 🌐 Koordinatlar: ${latitude.toStringAsFixed(4)}, ${longitude.toStringAsFixed(4)}
-⏰ Tarih: ${widget.earthquake.dateTime.day}.${widget.earthquake.dateTime.month}.${widget.earthquake.dateTime.year} ${widget.earthquake.dateTime.hour}:${widget.earthquake.dateTime.minute}
-🗺️ Haritada Görüntüle: https://www.google.com/maps/search/?api=1&query=$latitude,$longitude
+⏰ Tarih: $formattedDate $formattedTime
+🗺️ Harita: https://www.google.com/maps/search/?api=1&query=$latitude,$longitude
 
 #Deprem #DepremTakip''';
 
       HapticFeedback.mediumImpact();
-      
-      await Share.share(shareText);
-      
+
+      // Doğrudan panoya kopyala - paylaşım dialog kullanma
+      await Clipboard.setData(ClipboardData(text: shareText));
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Deprem bilgileri paylaşıldı'),
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white, size: 20),
+                SizedBox(width: 8),
+                Text('Deprem bilgileri panoya kopyalandı'),
+              ],
+            ),
             behavior: SnackBarBehavior.floating,
-            duration: Duration(seconds: 2),
+            backgroundColor: Color(0xFF10B981),
+            duration: Duration(seconds: 3),
           ),
         );
       }
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Paylaşım yapılamadı: $error'),
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.error, color: Colors.white, size: 20),
+                SizedBox(width: 8),
+                Text('Bilgiler kopyalanamadı'),
+              ],
+            ),
             behavior: SnackBarBehavior.floating,
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
+            duration: Duration(seconds: 2),
           ),
         );
       }
