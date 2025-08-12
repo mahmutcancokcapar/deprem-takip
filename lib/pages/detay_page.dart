@@ -194,7 +194,7 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
           ),
           child: IconButton(
             icon: const Icon(Icons.share_outlined, color: Colors.black87),
-            onPressed: _shareEarthquakeData,
+            onPressed: () => _shareEarthquakeData(),
           ),
         ),
       ],
@@ -1018,7 +1018,7 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
             'Paylaş',
             Icons.share_rounded,
             const Color(0xFF3B82F6),
-            _shareEarthquakeData,
+            () => _shareEarthquakeData(),
           ),
         ),
         const SizedBox(width: 16),
@@ -1038,7 +1038,7 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
     String label,
     IconData icon,
     Color color,
-    VoidCallback onTap,
+    Function() onTap,
   ) {
     return GestureDetector(
       onTap: () {
@@ -1104,14 +1104,13 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
     }
   }
 
-  void _shareEarthquakeData() {
-    final coordinates = widget.earthquake.geojson['coordinates'] as List;
-    final longitude = coordinates[0];
-    final latitude = coordinates[1];
+  void _shareEarthquakeData() async {
+    try {
+      final coordinates = widget.earthquake.geojson['coordinates'] as List;
+      final longitude = coordinates[0];
+      final latitude = coordinates[1];
 
-    final shareText =
-        '''
-🌍 Deprem Bilgileri
+      final shareText = '''🌍 Deprem Bilgileri
 
 📍 Konum: ${widget.earthquake.title}
 📊 Büyüklük: ${widget.earthquake.mag}
@@ -1120,27 +1119,33 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
 ⏰ Tarih: ${widget.earthquake.dateTime.day}.${widget.earthquake.dateTime.month}.${widget.earthquake.dateTime.year} ${widget.earthquake.dateTime.hour}:${widget.earthquake.dateTime.minute}
 🗺️ Haritada Görüntüle: https://www.google.com/maps/search/?api=1&query=$latitude,$longitude
 
-#Deprem #DepremTakip
-''';
+#Deprem #DepremTakip''';
 
-    HapticFeedback.mediumImpact();
-    Share.share(shareText)
-        .then((_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Deprem bilgileri paylaşıldı'),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        })
-        .catchError((error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Paylaşım yapılamadı: $error'),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        });
+      HapticFeedback.mediumImpact();
+      
+      await Share.share(shareText);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Deprem bilgileri paylaşıldı'),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Paylaşım yapılamadı: $error'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   Color _getMagnitudeColor(double magnitude) {

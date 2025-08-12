@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:deprem_takip/pages/kullanim_sartlari.dart';
+import 'package:deprem_takip/pages/notification_settings_page.dart';
 import 'package:deprem_takip/pages/rehber_page.dart';
 import 'package:deprem_takip/pages/welcome_page.dart';
 import 'package:deprem_takip/pages/yardim_destek.dart';
@@ -271,20 +272,20 @@ class _ProfilePageState extends State<ProfilePage> {
                 },
               ),
               _buildDivider(),
-              /*_buildMenuItem(
-                'Ayarlar',
-                'Uygulama ayarlarını düzenle',
-                Icons.settings_outlined,
+              _buildMenuItem(
+                'Bildirim Ayarları',
+                'Deprem bildirimlerini yönet',
+                Icons.notifications_outlined,
                 const Color(0xFF64748B),
                 () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const SettingsPage(),
+                      builder: (context) => const NotificationSettingsPage(),
                     ),
                   );
                 },
-              ),*/
+              ),
               _buildDivider(),
               _buildMenuItem(
                 'Yardım & Destek',

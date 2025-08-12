@@ -155,30 +155,33 @@ class _BelliNoktalarState extends State<BelliNoktalar>
       if (latitude != null && longitude != null) {
         // Farklı harita uygulamaları için URL'ler - Android için optimize edilmiş
         urlsToTry.addAll([
-          // Android Google Maps intent - en güvenilir yöntem
-          {
-            'url': 'geo:$latitude,$longitude?q=$latitude,$longitude',
-            'mode': LaunchMode.externalApplication,
-          },
-          // Google Maps web - koordinatlarla
+          // Google Maps web - koordinatlarla ve pin ile
           {
             'url':
-                'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude',
+                'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude&query_place_id=$placeName',
             'mode': LaunchMode.externalApplication,
           },
-          // Google Maps app specific intent
+          // Google Maps direkt link - pin ile
+          {
+            'url':
+                'https://maps.google.com/?q=$latitude,$longitude&ll=$latitude,$longitude&z=16',
+            'mode': LaunchMode.externalApplication,
+          },
+          // Android Google Maps intent - pin ile
+          {
+            'url':
+                'geo:$latitude,$longitude?q=$latitude,$longitude($placeName)&z=16',
+            'mode': LaunchMode.externalApplication,
+          },
+          // Google Maps app specific intent - pin ile
           {
             'url': 'google.navigation:q=$latitude,$longitude',
             'mode': LaunchMode.externalApplication,
           },
-          // Basit geo intent
+          // Google Maps place detail - pin ile
           {
-            'url': 'geo:$latitude,$longitude',
-            'mode': LaunchMode.externalApplication,
-          },
-          // Google Maps direkt link
-          {
-            'url': 'https://maps.google.com/?q=$latitude,$longitude',
+            'url':
+                'https://maps.google.com/maps?q=$latitude,$longitude($placeName)',
             'mode': LaunchMode.platformDefault,
           },
         ]);
@@ -196,15 +199,15 @@ class _BelliNoktalarState extends State<BelliNoktalar>
         String encodedSearchQuery = Uri.encodeComponent(searchQuery);
 
         urlsToTry.addAll([
-          // Android geo intent ile arama
-          {
-            'url': 'geo:0,0?q=$encodedSearchQuery',
-            'mode': LaunchMode.externalApplication,
-          },
-          // Google Maps web arama
+          // Google Maps web arama - pin ile
           {
             'url':
                 'https://www.google.com/maps/search/?api=1&query=$encodedSearchQuery',
+            'mode': LaunchMode.externalApplication,
+          },
+          // Android geo intent ile arama - pin ile
+          {
+            'url': 'geo:0,0?q=$encodedSearchQuery',
             'mode': LaunchMode.externalApplication,
           },
           // Google Maps navigation intent
@@ -212,7 +215,7 @@ class _BelliNoktalarState extends State<BelliNoktalar>
             'url': 'google.navigation:q=$encodedSearchQuery',
             'mode': LaunchMode.externalApplication,
           },
-          // Google Maps direkt arama
+          // Google Maps direkt arama - pin ile
           {
             'url': 'https://maps.google.com/maps?q=$encodedSearchQuery',
             'mode': LaunchMode.platformDefault,
@@ -249,7 +252,9 @@ class _BelliNoktalarState extends State<BelliNoktalar>
         try {
           String webUrl;
           if (latitude != null && longitude != null) {
-            webUrl = 'https://maps.google.com/@$latitude,$longitude,15z';
+            // Pin ile göstermek için daha detaylı URL
+            webUrl =
+                'https://maps.google.com/?q=$latitude,$longitude&ll=$latitude,$longitude&z=16&t=m';
           } else {
             String encodedSearch = Uri.encodeComponent(
               '$placeName $selectedDistrict $selectedCity',
@@ -687,90 +692,94 @@ class _BelliNoktalarState extends State<BelliNoktalar>
       );
     }
 
-    // Gerçek veriler varsa kullan, yoksa varsayılan veriler
-    List<Map<String, dynamic>> emergencyData = [];
-
-    // Hastaneler
-    for (var hospital in _hospitals) {
-      emergencyData.add({
-        'name': hospital.name,
-        'type': 'Hastane',
-        'distance': '${hospital.distance.toStringAsFixed(1)} km',
-        'phone': hospital.phoneNumber ?? 'Numara yok',
-        'icon': Icons.local_hospital,
-        'color': const Color(0xFFEF4444),
-        'latitude': hospital.latitude,
-        'longitude': hospital.longitude,
-      });
+    // Eğer hiç veri yoksa "bulunamadı" mesajı göster
+    if (_hospitals.isEmpty && _police.isEmpty && _fireStations.isEmpty) {
+      return _buildNoDataFound(
+        'Acil Durum Yerleri',
+        'Yakınınızda acil durum yeri bulunamadı. Lütfen konumunuzu kontrol edin veya daha geniş bir alanda arama yapın.',
+      );
     }
 
-    // Polis karakolları
-    for (var police in _police) {
-      emergencyData.add({
-        'name': police.name,
-        'type': 'Polis',
-        'distance': '${police.distance.toStringAsFixed(1)} km',
-        'phone': police.phoneNumber ?? '155',
-        'icon': Icons.security,
-        'color': const Color(0xFF3B82F6),
-        'latitude': police.latitude,
-        'longitude': police.longitude,
-      });
-    }
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Hastaneler Bölümü
+          if (_hospitals.isNotEmpty) ...[
+            _buildSectionHeader(
+              'Hastaneler',
+              Icons.local_hospital,
+              const Color(0xFFEF4444),
+            ),
+            const SizedBox(height: 12),
+            ..._hospitals.asMap().entries.map((entry) {
+              int index = entry.key;
+              var hospital = entry.value;
+              return _buildAnimatedPlaceCard({
+                'name': hospital.name,
+                'type': 'Hastane',
+                'distance': '${hospital.distance.toStringAsFixed(1)} km',
+                'icon': Icons.local_hospital,
+                'color': const Color(0xFFEF4444),
+                'latitude': hospital.latitude,
+                'longitude': hospital.longitude,
+              }, index);
+            }),
+            const SizedBox(height: 24),
+          ],
 
-    // İtfaiye istasyonları
-    for (var fireStation in _fireStations) {
-      emergencyData.add({
-        'name': fireStation.name,
-        'type': 'İtfaiye',
-        'distance': '${fireStation.distance.toStringAsFixed(1)} km',
-        'phone': fireStation.phoneNumber ?? '112',
-        'icon': Icons.fire_truck,
-        'color': const Color(0xFFF59E0B),
-        'latitude': fireStation.latitude,
-        'longitude': fireStation.longitude,
-      });
-    }
+          // Polis Karakolu Bölümü
+          if (_police.isNotEmpty) ...[
+            _buildSectionHeader(
+              'Polis Karakolu',
+              Icons.security,
+              const Color(0xFF3B82F6),
+            ),
+            const SizedBox(height: 12),
+            ..._police.asMap().entries.map((entry) {
+              int index = entry.key;
+              var police = entry.value;
+              return _buildAnimatedPlaceCard({
+                'name': police.name,
+                'type': 'Polis',
+                'distance': '${police.distance.toStringAsFixed(1)} km',
+                'icon': Icons.security,
+                'color': const Color(0xFF3B82F6),
+                'latitude': police.latitude,
+                'longitude': police.longitude,
+              }, index);
+            }),
+            const SizedBox(height: 24),
+          ],
 
-    // Eğer gerçek veri yoksa varsayılan veriler kullan
-    if (emergencyData.isEmpty) {
-      emergencyData = [
-        {
-          'name': 'Gaziantep Üniversitesi Tıp Fakültesi',
-          'type': 'Hastane',
-          'distance': '1.2 km',
-          'phone': '0342 360 60 60',
-          'icon': Icons.local_hospital,
-          'color': const Color(0xFFEF4444),
-        },
-        {
-          'name': 'İtfaiye Şahinbey İstasyonu',
-          'type': 'İtfaiye',
-          'distance': '800 m',
-          'phone': '112',
-          'icon': Icons.fire_truck,
-          'color': const Color(0xFFF59E0B),
-        },
-        {
-          'name': 'Şahinbey Emniyet Müdürlüğü',
-          'type': 'Polis',
-          'distance': '1.5 km',
-          'phone': '155',
-          'icon': Icons.security,
-          'color': const Color(0xFF3B82F6),
-        },
-        {
-          'name': 'AFAD Koordinasyon Merkezi',
-          'type': 'AFAD',
-          'distance': '2.1 km',
-          'phone': '0342 325 10 27',
-          'icon': Icons.emergency,
-          'color': const Color(0xFF8B5CF6),
-        },
-      ];
-    }
-
-    return _buildPlacesList(emergencyData, 'Acil Durum Yerleri');
+          // İtfaiye Bölümü
+          if (_fireStations.isNotEmpty) ...[
+            _buildSectionHeader(
+              'İtfaiye İstasyonu',
+              Icons.fire_truck,
+              const Color(0xFFF59E0B),
+            ),
+            const SizedBox(height: 12),
+            ..._fireStations.asMap().entries.map((entry) {
+              int index = entry.key;
+              var fireStation = entry.value;
+              return _buildAnimatedPlaceCard({
+                'name': fireStation.name,
+                'type': 'İtfaiye',
+                'distance': '${fireStation.distance.toStringAsFixed(1)} km',
+                'icon': Icons.fire_truck,
+                'color': const Color(0xFFF59E0B),
+                'latitude': fireStation.latitude,
+                'longitude': fireStation.longitude,
+              }, index);
+            }),
+            const SizedBox(height: 24),
+          ],
+        ],
+      ),
+    );
   }
 
   Widget _buildPharmacies() {
@@ -790,7 +799,6 @@ class _BelliNoktalarState extends State<BelliNoktalar>
         'name': pharmacy.name,
         'type': 'Açık',
         'distance': '${pharmacy.distance.toStringAsFixed(1)} km',
-        'phone': pharmacy.phoneNumber ?? 'Numara yok',
         'icon': Icons.local_pharmacy,
         'color': const Color(0xFF10B981),
         'latitude': pharmacy.latitude,
@@ -798,42 +806,12 @@ class _BelliNoktalarState extends State<BelliNoktalar>
       });
     }
 
-    // Eğer gerçek veri yoksa varsayılan veriler kullan
+    // Eğer gerçek veri yoksa "bulunamadı" mesajı göster
     if (pharmacyData.isEmpty) {
-      pharmacyData = [
-        {
-          'name': 'Sağlık Eczanesi',
-          'type': '24 Saat Açık',
-          'distance': '450 m',
-          'phone': '0342 123 45 67',
-          'icon': Icons.local_pharmacy,
-          'color': const Color(0xFF10B981),
-        },
-        {
-          'name': 'Güven Eczanesi',
-          'type': 'Açık',
-          'distance': '680 m',
-          'phone': '0342 987 65 43',
-          'icon': Icons.local_pharmacy,
-          'color': const Color(0xFF10B981),
-        },
-        {
-          'name': 'Merkez Eczanesi',
-          'type': 'Açık',
-          'distance': '920 m',
-          'phone': '0342 456 78 90',
-          'icon': Icons.local_pharmacy,
-          'color': const Color(0xFF10B981),
-        },
-        {
-          'name': 'Şifa Eczanesi',
-          'type': 'Kapalı',
-          'distance': '1.1 km',
-          'phone': '0342 321 54 76',
-          'icon': Icons.local_pharmacy,
-          'color': const Color(0xFF6B7280),
-        },
-      ];
+      return _buildNoDataFound(
+        'Eczaneler',
+        'Yakınınızda eczane bulunamadı. Lütfen konumunuzu kontrol edin veya daha geniş bir alanda arama yapın.',
+      );
     }
 
     return _buildPlacesList(pharmacyData, 'Yakındaki Eczaneler');
@@ -856,7 +834,6 @@ class _BelliNoktalarState extends State<BelliNoktalar>
         'name': park.name,
         'type': 'Toplanma Alanı',
         'distance': '${park.distance.toStringAsFixed(1)} km',
-        'phone': '-',
         'icon': Icons.park,
         'color': const Color(0xFF10B981),
         'latitude': park.latitude,
@@ -864,42 +841,12 @@ class _BelliNoktalarState extends State<BelliNoktalar>
       });
     }
 
-    // Eğer gerçek veri yoksa varsayılan veriler kullan
+    // Eğer gerçek veri yoksa "bulunamadı" mesajı göster
     if (assemblyData.isEmpty) {
-      assemblyData = [
-        {
-          'name': 'Şahinbey Belediyesi Park',
-          'type': 'Toplanma Alanı',
-          'distance': '300 m',
-          'phone': '-',
-          'icon': Icons.park,
-          'color': const Color(0xFF10B981),
-        },
-        {
-          'name': 'Atatürk Stadyumu',
-          'type': 'Büyük Alan',
-          'distance': '1.8 km',
-          'phone': '-',
-          'icon': Icons.stadium,
-          'color': const Color(0xFF3B82F6),
-        },
-        {
-          'name': 'Gaziantep Üniversitesi Kampüsü',
-          'type': 'Açık Alan',
-          'distance': '2.2 km',
-          'phone': '-',
-          'icon': Icons.school,
-          'color': const Color(0xFFF59E0B),
-        },
-        {
-          'name': 'Millet Bahçesi',
-          'type': 'Park Alanı',
-          'distance': '2.5 km',
-          'phone': '-',
-          'icon': Icons.nature,
-          'color': const Color(0xFF10B981),
-        },
-      ];
+      return _buildNoDataFound(
+        'Toplanma Alanları',
+        'Yakınınızda toplanma alanı bulunamadı. Lütfen konumunuzu kontrol edin veya daha geniş bir alanda arama yapın.',
+      );
     }
 
     return _buildPlacesList(assemblyData, 'Toplanma Alanları');
@@ -941,7 +888,6 @@ class _BelliNoktalarState extends State<BelliNoktalar>
         'name': pharmacy.name,
         'type': dutyType,
         'distance': '${pharmacy.distance.toStringAsFixed(1)} km',
-        'phone': pharmacy.phoneNumber ?? 'Numara yok',
         'icon': dutyIcon,
         'color': dutyColor,
         'latitude': pharmacy.latitude,
@@ -949,34 +895,63 @@ class _BelliNoktalarState extends State<BelliNoktalar>
       });
     }
 
-    // Eğer gerçek veri yoksa varsayılan veriler kullan
+    // Eğer gerçek veri yoksa "bulunamadı" mesajı göster
     if (onDutyData.isEmpty) {
-      onDutyData = [
-        {
-          'name': 'Nöbetçi Merkez Eczanesi',
-          'type': 'Gece Nöbetçisi',
-          'distance': '1.2 km',
-          'phone': '0342 111 22 33',
-          'icon': Icons.nightlight,
-          'color': const Color(0xFF8B5CF6),
-        },
-        {
-          'name': 'Gece Eczanesi',
-          'type': '24 Saat',
-          'distance': '2.1 km',
-          'phone': '0342 444 55 66',
-          'icon': Icons.access_time_filled,
-          'color': const Color(0xFFEF4444),
-        },
-        {
-          'name': 'Şahinbey Nöbetçi Eczane',
-          'type': 'Bugün Nöbetçi',
-          'distance': '890 m',
-          'phone': '0342 777 88 99',
-          'icon': Icons.local_pharmacy,
-          'color': const Color(0xFF10B981),
-        },
-      ];
+      return SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF8B5CF6).withOpacity(0.1),
+                    const Color(0xFF3B82F6).withOpacity(0.05),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFF8B5CF6).withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF8B5CF6).withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.info_outline,
+                      color: Color(0xFF8B5CF6),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Nöbetçi eczaneler günlük olarak güncellenmektedir. Gitmeden önce arayarak kontrol ediniz.',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: const Color(0xFF6B7280),
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _buildNoDataFound(
+              'Nöbetçi Eczaneler',
+              'Yakınınızda nöbetçi eczane bulunamadı. Lütfen konumunuzu kontrol edin veya daha geniş bir alanda arama yapın.',
+            ),
+          ],
+        ),
+      );
     }
 
     return SingleChildScrollView(
@@ -1271,90 +1246,219 @@ class _BelliNoktalarState extends State<BelliNoktalar>
                     ),
                   ],
                 ),
-                if (place['phone'] != '-') ...[
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(12),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNoDataFound(String title, String message) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 24,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF10B981), Color(0xFF059669)],
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: GoogleFonts.spaceGrotesk(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1E293B),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+          TweenAnimationBuilder<double>(
+            duration: const Duration(milliseconds: 800),
+            tween: Tween(begin: 0.0, end: 1.0),
+            curve: Curves.easeOutBack,
+            builder: (context, value, child) {
+              return Transform.translate(
+                offset: Offset(0, 20 * (1 - value)),
+                child: Opacity(
+                  opacity: value.clamp(0.0, 1.0),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: const Color(0xFFE2E8F0),
                         width: 1,
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.phone_outlined,
-                          size: 16,
-                          color: const Color(0xFF6B7280),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
                         ),
-                        const SizedBox(width: 8),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: const Color(0xFFE2E8F0),
+                              width: 2,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.search_off,
+                            size: 40,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
                         Text(
-                          place['phone'],
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                          'Yer Bulunamadı',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
                             color: const Color(0xFF1E293B),
                           ),
                         ),
-                        const Spacer(),
-                        InkWell(
-                          onTap: () async {
-                            final phoneNumber = place['phone']
-                                .toString()
-                                .replaceAll(' ', '');
-                            if (phoneNumber != '-' &&
-                                phoneNumber != 'Numara yok') {
-                              try {
-                                final Uri phoneUri = Uri(
-                                  scheme: 'tel',
-                                  path: phoneNumber,
-                                );
-                                if (await canLaunchUrl(phoneUri)) {
-                                  await launchUrl(phoneUri);
-                                } else {
-                                  throw 'Telefon araması desteklenmiyor';
-                                }
-                              } catch (e) {
-                                print('Telefon araması başlatılamadı: $e');
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Telefon araması başlatılamadı',
-                                      ),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
-                                }
-                              }
-                            }
-                          },
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF10B981).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
+                        const SizedBox(height: 12),
+                        Text(
+                          message,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: const Color(0xFF6B7280),
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _getCurrentLocationAndFetchPlaces,
+                            icon: const Icon(
+                              Icons.refresh,
+                              size: 18,
+                              color: Colors.white,
                             ),
-                            child: const Icon(
-                              Icons.call,
-                              size: 16,
-                              color: Color(0xFF10B981),
+                            label: Text(
+                              'Tekrar Dene',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF10B981),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 0,
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
-              ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, IconData icon, Color color) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [color, color.withOpacity(0.8)]),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Icon(icon, color: Colors.white, size: 20),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          title,
+          style: GoogleFonts.spaceGrotesk(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF1E293B),
+          ),
+        ),
+        const Spacer(),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            '${title == "Hastaneler"
+                ? _hospitals.length
+                : title == "Polis Karakolu"
+                ? _police.length
+                : _fireStations.length} yer',
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: color,
             ),
           ),
         ),
-      ),
+      ],
+    );
+  }
+
+  Widget _buildAnimatedPlaceCard(Map<String, dynamic> place, int index) {
+    return TweenAnimationBuilder<double>(
+      duration: Duration(milliseconds: 400 + (index * 100)),
+      tween: Tween(begin: 0.0, end: 1.0),
+      curve: Curves.easeOutBack,
+      builder: (context, value, child) {
+        return Transform.translate(
+          offset: Offset(0, 20 * (1 - value)),
+          child: Opacity(
+            opacity: value.clamp(0.0, 1.0),
+            child: _buildPlaceCard(place),
+          ),
+        );
+      },
     );
   }
 }
