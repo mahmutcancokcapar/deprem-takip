@@ -21,8 +21,9 @@ void main() async {
 Future<void> _initializeBackgroundService() async {
   try {
     // Bildirimler açık mı kontrol et
-    final notificationsEnabled = await BackgroundEarthquakeService.areNotificationsEnabled();
-    
+    final notificationsEnabled =
+        await BackgroundEarthquakeService.areNotificationsEnabled();
+
     if (notificationsEnabled) {
       // ignore: avoid_print
       print('🚀 Bildirimler açık, arka plan servisi başlatılıyor...');

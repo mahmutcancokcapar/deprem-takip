@@ -118,7 +118,7 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
         slivers: [
           _buildSliverAppBar(),
           SliverPadding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 FadeTransition(
@@ -128,17 +128,19 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
                     child: Column(
                       children: [
                         _buildHeroMagnitudeCard(),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
                         _buildLocationCard(),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
                         _buildMapCard(latitude, longitude),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
+                        _buildNearestCitiesCard(),
+                        const SizedBox(height: 20),
                         _buildDetailsCard(),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
                         _buildTimelineCard(),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
                         _buildActionButtons(),
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 32),
                       ],
                     ),
                   ),
@@ -153,64 +155,98 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
 
   Widget _buildSliverAppBar() {
     return SliverAppBar(
-      expandedHeight: 120,
+      expandedHeight: 100,
       floating: false,
       pinned: true,
-      backgroundColor: Colors.transparent,
-      elevation: 0,
+      backgroundColor: const Color(0xFFF8FAFC),
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.black.withOpacity(0.08),
+      elevation: 2,
       systemOverlayStyle: SystemUiOverlayStyle.dark,
       leading: Container(
         margin: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
-          borderRadius: BorderRadius.circular(12),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
         child: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF1E293B),
+            size: 18,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       actions: [
         Container(
-          margin: const EdgeInsets.all(8),
+          margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.9),
-            borderRadius: BorderRadius.circular(12),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF3B82F6), Color(0xFF1E40AF)],
+            ),
+            borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
+                color: const Color(0xFF3B82F6).withOpacity(0.25),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
           child: IconButton(
-            icon: const Icon(Icons.copy_outlined, color: Colors.black87),
+            icon: const Icon(
+              Icons.ios_share_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
             onPressed: () => _shareEarthquakeData(),
           ),
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
-        centerTitle: true,
+        centerTitle: false,
+        titlePadding: const EdgeInsets.only(left: 80, bottom: 16),
         title: AnimatedBuilder(
           animation: _fadeAnimation,
           builder: (context, child) {
             return Opacity(
               opacity: _fadeAnimation.value,
-              child: Text(
-                'Deprem Detayları',
-                style: GoogleFonts.spaceGrotesk(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF3B82F6), Color(0xFF1E40AF)],
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Icon(
+                      Icons.info_rounded,
+                      color: Colors.white,
+                      size: 12,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Deprem Detayları',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF1E293B),
+                    ),
+                  ),
+                ],
               ),
             );
           },
@@ -221,7 +257,8 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                _getMagnitudeColor(widget.earthquake.mag).withOpacity(0.1),
+                const Color(0xFFF8FAFC),
+                const Color(0xFF3B82F6).withOpacity(0.01),
                 Colors.transparent,
               ],
             ),
@@ -242,14 +279,15 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
             return Transform.scale(
               scale: _pulseAnimation.value,
               child: Container(
-                padding: const EdgeInsets.all(24),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                padding: const EdgeInsets.all(28),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
                       _getMagnitudeColor(widget.earthquake.mag),
                       _getMagnitudeColor(
                         widget.earthquake.mag,
-                      ).withOpacity(0.8),
+                      ).withOpacity(0.85),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -259,76 +297,131 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
                     BoxShadow(
                       color: _getMagnitudeColor(
                         widget.earthquake.mag,
-                      ).withOpacity(0.4),
+                      ).withOpacity(0.3),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
+                      spreadRadius: 0,
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 30,
+                      offset: const Offset(0, 15),
                     ),
                   ],
                 ),
                 child: Column(
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Büyüklük',
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                color: Colors.white.withOpacity(0.9),
-                                fontWeight: FontWeight.w500,
+                        // Sol taraf - Büyüklük bilgisi
+                        Expanded(
+                          flex: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: Colors.white.withOpacity(0.2),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.waves_rounded,
+                                      color: Colors.white,
+                                      size: 18,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'Büyüklük',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      color: Colors.white.withOpacity(0.9),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              widget.earthquake.mag.toStringAsFixed(1),
-                              style: GoogleFonts.spaceGrotesk(
-                                fontSize: 48,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                height: 1,
+                              const SizedBox(height: 16),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    widget.earthquake.mag.toStringAsFixed(1),
+                                    style: GoogleFonts.spaceGrotesk(
+                                      fontSize: 52,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      height: 0.9,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: Text(
+                                      'ML',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white.withOpacity(0.8),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                _getMagnitudeLevel(widget.earthquake.mag),
+
+                        // Sağ taraf - Durum ve seviye
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                _getMagnitudeDescription(widget.earthquake.mag),
                                 style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  color: Colors.white,
+                                  fontSize: 14,
+                                  color: Colors.white.withOpacity(0.95),
                                   fontWeight: FontWeight.w600,
                                 ),
+                                textAlign: TextAlign.end,
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              _getMagnitudeDescription(widget.earthquake.mag),
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: Colors.white.withOpacity(0.9),
-                                fontWeight: FontWeight.w500,
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.25),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Text(
+                                  _getTimeAgo(widget.earthquake.dateTime),
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ),
-                              textAlign: TextAlign.end,
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                     _buildMagnitudeIndicator(),
                   ],
                 ),
@@ -340,62 +433,132 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
     );
   }
 
+  String _getTimeAgo(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inMinutes < 1) {
+      return 'Az önce';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes} dk önce';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours} sa önce';
+    } else {
+      return '${difference.inDays} gün önce';
+    }
+  }
+
   Widget _buildMagnitudeIndicator() {
-    return Container(
-      height: 8,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Stack(
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 1500),
-            curve: Curves.easeOutCubic,
-            width:
-                (MediaQuery.of(context).size.width - 80) *
-                (widget.earthquake.mag / 10).clamp(0.0, 1.0),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(4),
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Şiddet Göstergesi',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                color: Colors.white.withOpacity(0.8),
+                fontWeight: FontWeight.w500,
+              ),
             ),
+            Text(
+              '${(widget.earthquake.mag / 10 * 100).toStringAsFixed(0)}%',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                color: Colors.white.withOpacity(0.8),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          height: 6,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(4),
           ),
-        ],
-      ),
+          child: Stack(
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 1200),
+                curve: Curves.easeOutCubic,
+                width:
+                    (MediaQuery.of(context).size.width - 120) *
+                    (widget.earthquake.mag / 10).clamp(0.0, 1.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.white.withOpacity(0.4),
+                      blurRadius: 6,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildLocationCard() {
     return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, const Color(0xFF3B82F6).withOpacity(0.01)],
+        ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFF3B82F6).withOpacity(0.15),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+          BoxShadow(
+            color: const Color(0xFF3B82F6).withOpacity(0.08),
             blurRadius: 30,
-            offset: const Offset(0, 15),
+            offset: const Offset(0, 12),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header section
           Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [const Color(0xFF3B82F6), const Color(0xFF1D4ED8)],
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF3B82F6), Color(0xFF1E40AF)],
                   ),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF3B82F6).withOpacity(0.25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: const Icon(
                   Icons.location_on_rounded,
                   color: Colors.white,
-                  size: 24,
+                  size: 20,
                 ),
               ),
               const SizedBox(width: 16),
@@ -411,10 +574,11 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
                         color: const Color(0xFF1E293B),
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
-                      'Deprem merkezi koordinatları',
+                      'Deprem merkezi ve koordinatlar',
                       style: GoogleFonts.inter(
-                        fontSize: 14,
+                        fontSize: 13,
                         color: const Color(0xFF64748B),
                         fontWeight: FontWeight.w500,
                       ),
@@ -425,21 +589,53 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
             ],
           ),
           const SizedBox(height: 20),
+
+          // Location title section
           Container(
-            padding: const EdgeInsets.all(16),
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
-            ),
-            child: Text(
-              widget.earthquake.title,
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF374151),
-                height: 1.5,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFFF8FAFC),
+                  const Color(0xFF3B82F6).withOpacity(0.02),
+                ],
               ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF3B82F6).withOpacity(0.1),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3B82F6).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.place_rounded,
+                    color: Color(0xFF3B82F6),
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    widget.earthquake.title,
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF1E293B),
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 20),
@@ -454,24 +650,94 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
     final longitude = coordinates[0];
     final latitude = coordinates[1];
 
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: _buildCoordinateItem(
-            'Enlem',
-            '${latitude.toStringAsFixed(6)}°',
-            Icons.place_rounded,
-            const Color(0xFF059669),
+        // En yakın şehir bilgisi
+        if (_getClosestCityInfo().isNotEmpty) ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF10B981).withOpacity(0.08),
+                  const Color(0xFF10B981).withOpacity(0.03),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF10B981).withOpacity(0.2),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.location_city_rounded,
+                    color: Color(0xFF10B981),
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'En Yakın Şehir',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: const Color(0xFF10B981),
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _getClosestCityInfo(),
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1E293B),
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildCoordinateItem(
-            'Boylam',
-            '${longitude.toStringAsFixed(6)}°',
-            Icons.explore_rounded,
-            const Color(0xFFDC2626),
-          ),
+          const SizedBox(height: 20),
+        ],
+
+        // Koordinat bilgileri
+        Row(
+          children: [
+            Expanded(
+              child: _buildCoordinateItem(
+                'Enlem',
+                '${latitude.toStringAsFixed(6)}°',
+                Icons.my_location_rounded,
+                const Color(0xFF059669),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildCoordinateItem(
+                'Boylam',
+                '${longitude.toStringAsFixed(6)}°',
+                Icons.explore_rounded,
+                const Color(0xFFDC2626),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -489,45 +755,90 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
         Clipboard.setData(ClipboardData(text: value));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('$label kopyalandı'),
+            content: Row(
+              children: [
+                Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+                const SizedBox(width: 8),
+                Text('$label kopyalandı'),
+              ],
+            ),
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
+            backgroundColor: color,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       },
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.05),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [color.withOpacity(0.06), color.withOpacity(0.02)],
+          ),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withOpacity(0.15), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.08),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.15),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              child: Icon(icon, color: color, size: 24),
+              child: Icon(icon, color: color, size: 22),
             ),
             const SizedBox(height: 12),
             Text(
               label,
               style: GoogleFonts.inter(
                 fontSize: 12,
-                color: const Color(0xFF6B7280),
-                fontWeight: FontWeight.w500,
+                color: color,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               value,
               style: GoogleFonts.spaceGrotesk(
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
-                color: color,
+                color: const Color(0xFF1E293B),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                'Dokunarak kopyala',
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -538,15 +849,28 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
 
   Widget _buildMapCard(double latitude, double longitude) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, const Color(0xFF10B981).withOpacity(0.01)],
+        ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFF10B981).withOpacity(0.15),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+          BoxShadow(
+            color: const Color(0xFF10B981).withOpacity(0.08),
             blurRadius: 30,
-            offset: const Offset(0, 15),
+            offset: const Offset(0, 12),
           ),
         ],
       ),
@@ -556,20 +880,20 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [const Color(0xFF10B981), const Color(0xFF059669)],
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF10B981), Color(0xFF059669)],
                   ),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
                   Icons.map_rounded,
                   color: Colors.white,
-                  size: 24,
+                  size: 20,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -577,7 +901,7 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
                     Text(
                       'Harita Konumu',
                       style: GoogleFonts.spaceGrotesk(
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF1E293B),
                       ),
@@ -585,7 +909,7 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
                     Text(
                       'Deprem merkezi görünümü',
                       style: GoogleFonts.inter(
-                        fontSize: 14,
+                        fontSize: 12,
                         color: const Color(0xFF64748B),
                         fontWeight: FontWeight.w500,
                       ),
@@ -593,27 +917,36 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
                   ],
                 ),
               ),
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    _isMapExpanded = !_isMapExpanded;
-                  });
-                },
-                icon: Icon(
-                  _isMapExpanded ? Icons.fullscreen_exit : Icons.fullscreen,
-                  color: const Color(0xFF6B7280),
+              Container(
+                decoration: BoxDecoration(
+                  color: _isMapExpanded
+                      ? const Color(0xFF10B981).withOpacity(0.1)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _isMapExpanded = !_isMapExpanded;
+                    });
+                  },
+                  icon: Icon(
+                    _isMapExpanded ? Icons.fullscreen_exit : Icons.fullscreen,
+                    color: const Color(0xFF6B7280),
+                    size: 20,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(14),
               child: SizedBox(
-                height: _isMapExpanded ? 300 : 200,
+                height: _isMapExpanded ? 280 : 180,
                 child: Stack(
                   children: [
                     FlutterMap(
@@ -637,71 +970,79 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
                           markers: [
                             Marker(
                               point: LatLng(latitude, longitude),
-                              width: 100,
-                              height: 100,
+                              width: 80,
+                              height: 80,
                               child: AnimatedBuilder(
                                 animation: _waveAnimation,
                                 builder: (context, child) {
                                   return Center(
-                                    // Bu çok önemli!
                                     child: Stack(
                                       alignment: Alignment.center,
                                       children: [
                                         // Dalga halkaları
                                         for (int i = 0; i < 3; i++)
-                                          Transform.scale(
-                                            scale:
-                                                1 +
-                                                ((_waveAnimation.value +
-                                                            i * 0.3) %
-                                                        1) *
-                                                    2,
-                                            child: Opacity(
-                                              opacity:
-                                                  (1 -
-                                                          ((_waveAnimation
-                                                                      .value +
-                                                                  i * 0.3) %
-                                                              1))
-                                                      .clamp(0.0, 1.0) *
-                                                  0.4,
-                                              child: Container(
-                                                width: 30,
-                                                height: 30,
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  border: Border.all(
-                                                    color: _getMagnitudeColor(
-                                                      widget.earthquake.mag,
+                                          AnimatedBuilder(
+                                            animation: _waveAnimation,
+                                            builder: (context, child) {
+                                              final scale =
+                                                  1.0 +
+                                                  (i * 0.3) +
+                                                  (_waveAnimation.value * 0.5);
+                                              final opacity =
+                                                  (1.0 - _waveAnimation.value) *
+                                                  (1.0 - i * 0.3);
+                                              return Transform.scale(
+                                                scale: scale,
+                                                child: Container(
+                                                  width: 30,
+                                                  height: 30,
+                                                  decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    border: Border.all(
+                                                      color:
+                                                          _getMagnitudeColor(
+                                                            widget
+                                                                .earthquake
+                                                                .mag,
+                                                          ).withOpacity(
+                                                            opacity.clamp(
+                                                              0.0,
+                                                              0.6,
+                                                            ),
+                                                          ),
+                                                      width: 2,
                                                     ),
-                                                    width: 1.5,
                                                   ),
                                                 ),
-                                              ),
-                                            ),
+                                              );
+                                            },
                                           ),
                                         // Marker ikonu
                                         Container(
-                                          padding: const EdgeInsets.all(8),
+                                          padding: const EdgeInsets.all(6),
                                           decoration: BoxDecoration(
                                             color: _getMagnitudeColor(
                                               widget.earthquake.mag,
                                             ),
                                             shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: Colors.white,
+                                              width: 2,
+                                            ),
                                             boxShadow: [
                                               BoxShadow(
                                                 color: _getMagnitudeColor(
                                                   widget.earthquake.mag,
-                                                ).withOpacity(0.5),
-                                                blurRadius: 10,
-                                                spreadRadius: 2,
+                                                ).withOpacity(0.4),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 2),
                                               ),
                                             ],
                                           ),
                                           child: const Icon(
-                                            Icons.location_on_rounded,
+                                            Icons.my_location_rounded,
                                             color: Colors.white,
-                                            size: 24,
+                                            size: 18,
                                           ),
                                         ),
                                       ],
@@ -726,15 +1067,28 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
 
   Widget _buildDetailsCard() {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, const Color(0xFFF59E0B).withOpacity(0.01)],
+        ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFFF59E0B).withOpacity(0.15),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+          BoxShadow(
+            color: const Color(0xFFF59E0B).withOpacity(0.08),
             blurRadius: 30,
-            offset: const Offset(0, 15),
+            offset: const Offset(0, 12),
           ),
         ],
       ),
@@ -744,27 +1098,27 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [const Color(0xFFF59E0B), const Color(0xFFD97706)],
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
                   ),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
                   Icons.info_rounded,
                   color: Colors.white,
-                  size: 24,
+                  size: 20,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 14),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Teknik Detaylar',
                     style: GoogleFonts.spaceGrotesk(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: const Color(0xFF1E293B),
                     ),
@@ -772,7 +1126,7 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
                   Text(
                     'Deprem parametreleri',
                     style: GoogleFonts.inter(
-                      fontSize: 14,
+                      fontSize: 12,
                       color: const Color(0xFF64748B),
                       fontWeight: FontWeight.w500,
                     ),
@@ -781,7 +1135,7 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           _buildDetailRow(
             'Derinlik',
             '${widget.earthquake.depth.toStringAsFixed(1)} km',
@@ -800,6 +1154,16 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
             Icons.fingerprint_rounded,
             const Color(0xFFDC2626),
           ),
+
+          // En yakın havaalanı bilgisi
+          if (_getNearestAirportInfo().isNotEmpty)
+            _buildDetailRow(
+              'En Yakın Havaalanı',
+              _getNearestAirportInfo(),
+              Icons.flight_rounded,
+              const Color(0xFF2563EB),
+            ),
+
           _buildDetailRow(
             'Koordinat Sistemi',
             'WGS84',
@@ -818,12 +1182,16 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
     Color color,
   ) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [color.withOpacity(0.04), color.withOpacity(0.01)],
+        ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.1)),
+        border: Border.all(color: color.withOpacity(0.15), width: 1),
       ),
       child: Row(
         children: [
@@ -833,9 +1201,9 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: 18),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -843,7 +1211,7 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
                 Text(
                   label,
                   style: GoogleFonts.inter(
-                    fontSize: 14,
+                    fontSize: 13,
                     color: const Color(0xFF6B7280),
                     fontWeight: FontWeight.w500,
                   ),
@@ -852,7 +1220,7 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
                 Text(
                   value,
                   style: GoogleFonts.inter(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF1E293B),
                   ),
@@ -882,15 +1250,28 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
     }
 
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, const Color(0xFF8B5CF6).withOpacity(0.01)],
+        ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFF8B5CF6).withOpacity(0.15),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+          BoxShadow(
+            color: const Color(0xFF8B5CF6).withOpacity(0.08),
             blurRadius: 30,
-            offset: const Offset(0, 15),
+            offset: const Offset(0, 12),
           ),
         ],
       ),
@@ -900,27 +1281,27 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [const Color(0xFF8B5CF6), const Color(0xFF7C3AED)],
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
                   ),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
                   Icons.schedule_rounded,
                   color: Colors.white,
-                  size: 24,
+                  size: 20,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 14),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Zaman Bilgileri',
                     style: GoogleFonts.spaceGrotesk(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: const Color(0xFF1E293B),
                     ),
@@ -928,7 +1309,7 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
                   Text(
                     'Deprem tarihi ve süresi',
                     style: GoogleFonts.inter(
-                      fontSize: 14,
+                      fontSize: 12,
                       color: const Color(0xFF64748B),
                       fontWeight: FontWeight.w500,
                     ),
@@ -937,14 +1318,14 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           _buildTimelineItem(
             'Deprem Zamanı',
             '${dateTime.day.toString().padLeft(2, '0')}.${dateTime.month.toString().padLeft(2, '0')}.${dateTime.year} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}',
             Icons.access_time_rounded,
             const Color(0xFF059669),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           _buildTimelineItem(
             'Geçen Süre',
             timeAgo,
@@ -963,11 +1344,15 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
     Color color,
   ) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [color.withOpacity(0.04), color.withOpacity(0.01)],
+        ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.1)),
+        border: Border.all(color: color.withOpacity(0.15), width: 1),
       ),
       child: Row(
         children: [
@@ -977,9 +1362,9 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: 18),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -987,7 +1372,7 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
                 Text(
                   label,
                   style: GoogleFonts.inter(
-                    fontSize: 14,
+                    fontSize: 13,
                     color: const Color(0xFF6B7280),
                     fontWeight: FontWeight.w500,
                   ),
@@ -996,7 +1381,7 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
                 Text(
                   value,
                   style: GoogleFonts.inter(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF1E293B),
                   ),
@@ -1010,26 +1395,31 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
   }
 
   Widget _buildActionButtons() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildActionButton(
-            'Kopyala',
-            Icons.copy_rounded,
-            const Color(0xFF3B82F6),
-            () => _shareEarthquakeData(),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildActionButton(
+              'Bilgileri Paylaş',
+              Icons.ios_share_rounded,
+              const Color(0xFF3B82F6),
+              () => _shareEarthquakeData(),
+              isPrimary: true,
+            ),
           ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildActionButton(
-            'Haritada Göster',
-            Icons.map_rounded,
-            const Color(0xFF10B981),
-            () => _openInMap(),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildActionButton(
+              'Haritada Göster',
+              Icons.map_rounded,
+              const Color(0xFF10B981),
+              () => _openInMap(),
+              isPrimary: true,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -1037,41 +1427,57 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
     String label,
     IconData icon,
     Color color,
-    Function() onTap,
-  ) {
+    Function() onTap, {
+    bool isPrimary = true,
+  }) {
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
         onTap();
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [color, color.withOpacity(0.8)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          gradient: isPrimary
+              ? LinearGradient(
+                  colors: [color, color.withOpacity(0.8)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          color: isPrimary ? null : Colors.white,
           borderRadius: BorderRadius.circular(16),
+          border: isPrimary
+              ? null
+              : Border.all(color: color.withOpacity(0.3), width: 1.5),
           boxShadow: [
+            if (isPrimary)
+              BoxShadow(
+                color: color.withOpacity(0.25),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
             BoxShadow(
-              color: color.withOpacity(0.3),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
+              color: Colors.black.withOpacity(isPrimary ? 0.08 : 0.04),
+              blurRadius: isPrimary ? 15 : 8,
+              offset: Offset(0, isPrimary ? 6 : 3),
             ),
           ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: Colors.white, size: 20),
+            Icon(icon, color: isPrimary ? Colors.white : color, size: 18),
             const SizedBox(width: 8),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
+            Flexible(
+              child: Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: isPrimary ? Colors.white : color,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -1179,15 +1585,6 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
     return const Color(0xFF10B981); // Green
   }
 
-  String _getMagnitudeLevel(double magnitude) {
-    if (magnitude >= 7.0) return 'AŞIRI BÜYÜK';
-    if (magnitude >= 6.0) return 'ÇOK BÜYÜK';
-    if (magnitude >= 5.0) return 'BÜYÜK';
-    if (magnitude >= 4.0) return 'ORTA';
-    if (magnitude >= 3.0) return 'KÜÇÜK';
-    return 'ÇOK KÜÇÜK';
-  }
-
   String _getMagnitudeDescription(double magnitude) {
     if (magnitude >= 7.0) return 'Çok Büyük Deprem';
     if (magnitude >= 6.0) return 'Büyük Deprem';
@@ -1195,5 +1592,267 @@ class _EarthquakeDetailState extends State<EarthquakeDetail>
     if (magnitude >= 4.0) return 'Hafif Deprem';
     if (magnitude >= 3.0) return 'Zayıf Deprem';
     return 'Çok Zayıf Deprem';
+  }
+
+  // Helper method to get closest city information
+  String _getClosestCityInfo() {
+    try {
+      // Önce location_properties'den en yakın şehri almaya çalış
+      if (widget.earthquake.locationProperties.isNotEmpty &&
+          widget.earthquake.locationProperties.containsKey('closestCity')) {
+        final closestCity = widget.earthquake.locationProperties['closestCity'];
+        if (closestCity != null && closestCity['name'] != null) {
+          final distance = closestCity['distance'];
+          final population = closestCity['population'];
+          if (distance != null) {
+            final distanceKm = (distance / 1000).round();
+            String result = '${closestCity['name']} ($distanceKm km uzaklık)';
+            if (population != null) {
+              final populationStr = _formatPopulation(population);
+              result += '\nNüfus: $populationStr';
+            }
+            return result;
+          }
+          return closestCity['name'].toString();
+        }
+      }
+
+      // API'den gelen location_properties verisi yoksa title'dan çıkarmaya çalış
+      if (widget.earthquake.title.contains('-')) {
+        final parts = widget.earthquake.title.split('-');
+        if (parts.length >= 2) {
+          final cityPart = parts[1].trim();
+          final cityName = cityPart.replaceAll(RegExp(r'\([^)]*\)'), '').trim();
+          return cityName.isNotEmpty ? cityName : '';
+        }
+      }
+
+      // Title'dan şehir bilgisini çıkarmaya çalış
+      if (widget.earthquake.title.contains('(') &&
+          widget.earthquake.title.contains(')')) {
+        final startIndex = widget.earthquake.title.lastIndexOf('(');
+        final endIndex = widget.earthquake.title.lastIndexOf(')');
+        if (startIndex != -1 && endIndex != -1 && endIndex > startIndex) {
+          return widget.earthquake.title.substring(startIndex + 1, endIndex);
+        }
+      }
+
+      return '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  // Helper method to format population numbers
+  String _formatPopulation(int population) {
+    if (population >= 1000000) {
+      return '${(population / 1000000).toStringAsFixed(1)}M';
+    } else if (population >= 1000) {
+      return '${(population / 1000).toStringAsFixed(0)}K';
+    }
+    return population.toString();
+  }
+
+  // Helper method to get nearest airport information
+  String _getNearestAirportInfo() {
+    try {
+      if (widget.earthquake.locationProperties.isNotEmpty &&
+          widget.earthquake.locationProperties.containsKey('airports')) {
+        final airports = widget.earthquake.locationProperties['airports'];
+        if (airports != null && airports is List && airports.isNotEmpty) {
+          final nearestAirport = airports.first;
+          if (nearestAirport != null && nearestAirport['name'] != null) {
+            final distance = nearestAirport['distance'];
+            final code = nearestAirport['code'];
+            if (distance != null) {
+              final distanceKm = (distance / 1000).round();
+              String result = '${nearestAirport['name']}';
+              if (code != null) {
+                result += ' ($code)';
+              }
+              result += ' - $distanceKm km';
+              return result;
+            }
+            return nearestAirport['name'].toString();
+          }
+        }
+      }
+      return '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  Widget _buildNearestCitiesCard() {
+    if (widget.earthquake.locationProperties.isEmpty ||
+        !widget.earthquake.locationProperties.containsKey('closestCities')) {
+      return const SizedBox.shrink();
+    }
+
+    final closestCities = widget.earthquake.locationProperties['closestCities'];
+    if (closestCities == null ||
+        closestCities is! List ||
+        closestCities.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, const Color(0xFF8B5CF6).withOpacity(0.01)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFF8B5CF6).withOpacity(0.15),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+          BoxShadow(
+            color: const Color(0xFF8B5CF6).withOpacity(0.08),
+            blurRadius: 30,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.location_city_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'En Yakın Şehirler',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF1E293B),
+                      ),
+                    ),
+                    Text(
+                      'Deprem merkezine olan uzaklıklar',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: const Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...closestCities.take(5).map((city) => _buildCityItem(city)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCityItem(Map<String, dynamic> city) {
+    final distance = city['distance'];
+    final distanceKm = distance != null ? (distance / 1000).round() : 0;
+    final population = city['population'];
+    final populationStr = population != null
+        ? _formatPopulation(population)
+        : '';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFFF8FAFC),
+            const Color(0xFF8B5CF6).withOpacity(0.02),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF8B5CF6).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.location_on,
+              color: Color(0xFF8B5CF6),
+              size: 16,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  city['name']?.toString() ?? 'Bilinmiyor',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1E293B),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Text(
+                      '$distanceKm km uzaklık',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: const Color(0xFF6B7280),
+                      ),
+                    ),
+                    if (populationStr.isNotEmpty) ...[
+                      const Text(
+                        ' • ',
+                        style: TextStyle(color: Color(0xFF6B7280)),
+                      ),
+                      Text(
+                        'Nüfus: $populationStr',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: const Color(0xFF6B7280),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
