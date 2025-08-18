@@ -5,6 +5,16 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+import java.util.Properties
+import java.io.FileInputStream
+
+// Load keystore properties
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "com.mcmedya.depremtakip"
     compileSdk = 35
@@ -18,6 +28,15 @@ android {
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
+    }
+
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String? ?: "upload"
+            keyPassword = keystoreProperties["keyPassword"] as String? ?: ""
+            storeFile = file(keystoreProperties["storeFile"] as String? ?: "")
+            storePassword = keystoreProperties["storePassword"] as String? ?: ""
+        }
     }
 
     defaultConfig {
@@ -34,7 +53,7 @@ android {
     buildTypes {
         release {
             // Release build configuration for Play Store
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             isShrinkResources = false
         }
