@@ -43,3 +43,48 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Release signing keys - NEVER commit these!
+/android/key.properties
+/android/app/upload-keystore.jks
+*.jks
+*.keystore
+**/upload-keystore.jks
+**/key.properties
+
+# Release builds
+*.apk
+*.aab
+/build/app/outputs/
+/build/app/intermediates/
+
+# Play Store publishing files
+/android/app/src/main/res/values/google_maps_api.xml
+/android/app/google-services.json
+/ios/Runner/GoogleService-Info.plist
+/web/firebase-config.js
+
+# Sensitive configuration files
+.env
+.env.local
+.env.production
+config.properties
+secrets.properties
+
+# Build artifacts and cache
+flutter_*.log
+.metadata
+**/.packages
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+
+# IDE and OS files
+.vscode/settings.json
+.vscode/launch.json
+**/.DS_Store
+**/Thumbs.db
+
+# Generated files
+**/GeneratedPluginRegistrant.java
+**/GeneratedPluginRegistrant.swift
+**/GeneratedPluginRegistrant.m
