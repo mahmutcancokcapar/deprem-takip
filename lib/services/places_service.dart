@@ -4,7 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import '../models/place_model.dart';
 
 class PlacesService {
-  final String _apiKey = 'AIzaSyCjgON8c5eMmnRGK_X7DeStYqumwSwfn7M';
+  final String _apiKey = 'API_KEY';
 
   Future<List<Place>> getNearbyPlaces(Position position) async {
     final types = ['hospital', 'police', 'fire_station', 'pharmacy', 'park'];
